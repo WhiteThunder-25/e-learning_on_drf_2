@@ -153,8 +153,14 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
 if DEBUG:
     STATICFILES_DIRS = [
         os.path.join(BASE_DIR, 'static'),
     ]
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://redis:6379/0',
+    }
+}
