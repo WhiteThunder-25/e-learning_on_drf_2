@@ -63,10 +63,10 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
       - name: Build image
-        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/lms:${{ github.sha }} .
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/lms:${{ github.sha }} .
 
       - name: Push image
-        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/lms:${{ github.sha }}
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/lms:${{ github.sha }}
 
   deploy:
     needs: build
@@ -83,5 +83,9 @@ jobs:
 
       - name: Deploy to server
         run: |
-          ssh -t -t -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} "     
-          cd ~/myproject && docker-compose down && docker-compose up -d --build "
+            ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            docker pull ${{ secrets.DOCKER_USERNAME }}/lms:${{ github.sha }}
+            docker stop lms || true
+            docker rm lms || true
+            docker run -d -p 8080:80 --name lms ${{ secrets.DOCKER_USERNAME }}/lms:${{ github.sha }}
+            EOF
