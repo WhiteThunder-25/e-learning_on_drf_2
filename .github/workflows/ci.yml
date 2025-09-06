@@ -62,6 +62,12 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
+      - name: Build image
+        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/lms:${{ github.sha }}
+
+      - name: Push image
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/lms:${{ github.sha }}
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
