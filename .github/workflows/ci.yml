@@ -3,7 +3,7 @@ name: Django CI/CD Pipeline
 on: [push]
 
 env:
-  DOCKER_IMAGE: ${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }}
+  DOCKER_IMAGE: ${{ secrets.DOCKER_HUB_USERNAME }}/hw_lms:${{ github.sha }}
 jobs:
 
   test:
@@ -86,6 +86,9 @@ jobs:
 
       - name: Deploy to server
         run: |
-          ssh -t -t -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} "     
-          cd ~/myproject && docker-compose down && docker-compose up -d --build 
-          "
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+          docker pull ${{ secrets.DOCKER_USERNAME }}/hw_lms:${{ github.sha }}
+          docker stop hw_lms || true
+          docker rm hw_lms || true
+          docker run -d --name hw_lms -p 80:8000 ${{ secrets.DOCKER_USERNAME }}/hw_lms:${{ github.sha }}
+          EOF
